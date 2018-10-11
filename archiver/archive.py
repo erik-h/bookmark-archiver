@@ -58,7 +58,7 @@ def merge_links(archive_path=OUTPUT_DIR, import_path=None):
     if archive_path:
         existing_links = parse_json_links_index(archive_path)
         all_links = validate_links(existing_links + all_links)
-    
+
     num_new_links = len(all_links) - len(existing_links)
     if num_new_links:
         print('[{green}+{reset}] [{}] Adding {} new links from {} to {}/index.json'.format(
@@ -130,7 +130,7 @@ if __name__ == '__main__':
 
     source = sys.argv[1] if argc > 1 else None  # path of links file to import
     resume = sys.argv[2] if argc > 2 else None  # timestamp to resume dowloading from
-   
+
     if argc == 1:
         source, resume = None, None
     elif argc == 2:
@@ -153,13 +153,13 @@ if __name__ == '__main__':
     else:
         out_dir = OUTPUT_DIR
 
-    # Step 0: Download url to local file (only happens if a URL is specified instead of local path) 
+    # Step 0: Download url to local file (only happens if a URL is specified instead of local path)
     if source and any(source.startswith(s) for s in ('http://', 'https://', 'ftp://')):
         source = download_url(source)
 
     # Step 1: Parse the links and dedupe them with existing archive
     links = merge_links(archive_path=out_dir, import_path=source)
-    
+
     # Step 2: Write new index
     write_links_index(out_dir=out_dir, links=links)
 

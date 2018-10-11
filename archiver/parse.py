@@ -20,6 +20,7 @@ Parsed link schema: {
 import re
 import json
 import xml.etree.ElementTree as etree
+import feedparser
 
 from datetime import datetime
 
@@ -45,7 +46,7 @@ def get_parsers(file):
 
 def parse_links(path):
     """parse a list of links dictionaries from a bookmark export file"""
-    
+
     links = []
     with open(path, 'r', encoding='utf-8') as file:
         for parser_func in get_parsers(file).values():
@@ -126,27 +127,12 @@ def parse_rss_export(rss_file):
     """Parse RSS XML-format files into links"""
 
     rss_file.seek(0)
-    items = rss_file.read().split('</item>\n<item>')
-    for item in items:
-        # example item:
-        # <item>
-        # <title><![CDATA[How JavaScript works: inside the V8 engine]]></title>
-        # <category>Unread</category>
-        # <link>https://blog.sessionstack.com/how-javascript-works-inside</link>
-        # <guid>https://blog.sessionstack.com/how-javascript-works-inside</guid>
-        # <pubDate>Mon, 21 Aug 2017 14:21:58 -0500</pubDate>
-        # </item>
+    rss_feed = feedparser.parse(rss_file.read())
 
-        trailing_removed = item.split('</item>', 1)[0]
-        leading_removed = trailing_removed.split('<item>', 1)[-1]
-        rows = leading_removed.split('\n')
-
-        def get_row(key):
-            return [r for r in rows if r.startswith('<{}>'.format(key))][0]
-
-        title = str_between(get_row('title'), '<![CDATA[', ']]')
-        url = str_between(get_row('link'), '<link>', '</link>')
-        ts_str = str_between(get_row('pubDate'), '<pubDate>', '</pubDate>')
+    for item in rss_feed.entries:
+        title = item.title
+        url = item.link
+        ts_str = item.published
         time = datetime.strptime(ts_str, "%a, %d %b %Y %H:%M:%S %z")
 
         info = {
@@ -170,7 +156,7 @@ def parse_bookmarks_export(html_file):
     for line in html_file:
         # example line
         # <DT><A HREF="https://example.com/?q=1+2" ADD_DATE="1497562974" LAST_MODIFIED="1497562974" ICON_URI="https://example.com/favicon.ico" ICON="data:image/png;base64,...">example bookmark title</A>
-        
+
         match = pattern.search(line)
         if match:
             url = match.group(1)
@@ -203,7 +189,7 @@ def parse_pinboard_rss_feed(rss_file):
         #       = 🌈🌈🌈🌈
         #        = 🌈🌈🌈🌈
         #         = 🏆🏆🏆🏆
-        
+
         # Pinboard includes a colon in its date stamp timezone offsets, which
         # Python can't parse. Remove it:
         if ":" == ts_str[-3:-2]:

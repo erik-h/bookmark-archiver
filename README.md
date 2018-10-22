@@ -248,6 +248,11 @@ apt install chromium-browser python3 wget
 ```
 
 ```bash
+# From the root of the Git repository
+pip3 install -r archiver/requirements.txt
+```
+
+```bash
 # Check that everything worked:
 chromium-browser --version && which wget && which python3 && which curl && echo "[√] All dependencies installed."
 ```

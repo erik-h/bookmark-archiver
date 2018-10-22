@@ -17,6 +17,9 @@ read
 
 echo ""
 
+# Directory in which this setup script is located (after resolving symlinks).
+script_dir="$(dirname "$(readlink -f "$0")")"
+
 # On Linux:
 if which apt-get > /dev/null; then
     echo "[+] Updating apt repos..."
@@ -66,8 +69,12 @@ else
     echo "    (those are the only currently supported systems)"
     echo ""
     echo "See the README.md for Manual Setup & Troubleshooting instructions."
-    exit 1
+	# DEBUG
+    # exit 1
 fi
+
+# Install Python dependencies
+pip3 install -r "$script_dir/../archiver/requirements.txt"
 
 # Check:
 echo ""
